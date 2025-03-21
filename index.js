@@ -20,10 +20,10 @@ app.post("/login", loginLimiter, (req, res) => {
   const { email, password } = req.body;
 
   if (!email || typeof email !== "string") {
-    return "Name is required and should be a string.";
+    res.status(400).json("Name is required and should be a string.");
   }
   if (!password || typeof password !== "string") {
-    return "Email is required and should be a string.";
+    res.status(400).json("Email is required and should be a string.");
   }
 
   const user = users.find((u) => u.email === email && u.password === password);

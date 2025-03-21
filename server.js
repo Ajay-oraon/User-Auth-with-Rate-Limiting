@@ -1,4 +1,5 @@
-const app = require("./index");
+const { app } = require("./index.js");
+
 
 require("dotenv").config();
 const PORT = process.env.PORT;

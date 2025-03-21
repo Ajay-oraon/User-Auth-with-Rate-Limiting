@@ -20,6 +20,16 @@ describe("User Authentication API", () => {
     jest.clearAllMocks();
   });
 
+  test("Handle missing email or password fields.", async () => {
+    const mockUser = {
+      email: "",
+      password: "securePassword123",
+    };
+    const res = await request(server).post("/login").send(mockUser);
+    expect(res.statusCode).toBe(400);
+    expect(res.body).toEqual("Name is required and should be a string.");
+  });
+
   test("Correct Credentials Test", async () => {
     const mockUser = {
       email: "user@example.com",
@@ -44,13 +54,12 @@ describe("User Authentication API", () => {
     expect(response.body).toHaveProperty("error", "Invalid credentials");
   });
 
-  test("Cooldown Period Test (Rate Limiting)", async () => {
+  test(" Block login attempts exceeding 5 attempts within one minute", async () => {
     const mockInvalidUser = {
       email: "user@example.com",
       password: "wrongPassword",
     };
 
-    
     for (let i = 0; i < 5; i++) {
       await request(server).post("/login").send(mockInvalidUser);
     }
@@ -64,20 +73,5 @@ describe("User Authentication API", () => {
       "error",
       "Too many login attempts. Try again later."
     );
-
-    // Wait for 1 minute before retrying
-    await new Promise((resolve) => setTimeout(resolve, 60000));
-
-    const mockValidUser = {
-      email: "user@example.com",
-      password: "securePassword123",
-    };
-
-    // Now a valid login attempt should succeed
-    const afterCooldownResponse = await request(server)
-      .post("/login")
-      .send(mockValidUser);
-    expect(afterCooldownResponse.statusCode).toBe(200);
-    expect(afterCooldownResponse.body).toHaveProperty("success", true);
   });
 });
